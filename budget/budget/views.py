@@ -110,7 +110,6 @@ def home(request):
                                               'page_range': page_range})
 
 
-
 def logout(request):
     if request.user.is_authenticated:
         auth_logout(request)
