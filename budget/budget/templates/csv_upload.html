@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+{% if message %}
+    {% for message in messages%}
+        <div>
+            <strong>
+                {{message|safe}}
+            </strong>
+        </div>
+    {% endfor%}
+{% else %}
+    {{order}}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token%}
+        <label> Upload a file</label>
+        <input type="file" name="file">
+        <p> Только формат CSV</p>
+        <button type="submit"> Загрузить </button>
+    </form>
+{% endif %}
+{% extends 'base.html' %}
+{% block content %}
+  <h4><strong>Загрузка файла только формата CSV</strong></h4>
+                {{ form.as_p }}
+                <button class="btn btn-outline-secondary" id="inputGroupFileAddon04" type="submit"> Загрузить </button>
+    </form>
+{% endblock content %}
+
+

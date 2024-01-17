@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+    {% block content %}
+        {% if user.is_authenticated %}
+            <form method="POST" action="create/">
+                {% csrf_token %}
+                <p>
+                    <h4><label>Введите категорию для добавления</label></h4>
+                    <input type="text" name="title" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1"/>
+                </p>
+                <input type="submit" value="Сохранить" >
+            </form>
+            <div>
+                {% if categories  %}
+                    <ol>
+                        {% for category in categories %}
+                        <h6><li> {{category.title}} </li></h6>
+                        <p><em><a href="edit/{{category.id}}">Изменить</a> | <a href="delete/{{category.id}}">Удалить</a></em></p>
+                        {% endfor %}
+                    </ol>
+                {% else %}
+                    <p>There are no categories </p>
+                {% endif %}
+            </div>
+        {% else %}
+            <h3>You are not logged in.</h3>
+            <a href="{% url 'login' %}">Log In</a>
+        {% endif %}
+    {% endblock %}

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+{% extends 'base.html' %} &nbsp;{% block content %}
+  <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+      <div>
+        <label>Имя пользователя</label>
+        <input type="text" placeholder="Имя пользователя" aria-label="Имя пользователя" aria-describedby="basic-addon1" name="username" autofocus required id="id_username">
+      </div>
+      <div>
+          <label for="id_password" >Пароль</label>
+          <input type="password" name="password" required id="id_password">
+      </div>
+      <div><button type="submit" >Submit</button></div>
+      {% if error_message %}
+        <p class="error">{{ error_message }}</p>
+      {% endif %}
+  </form>
+  <p>Еще нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a></p>
+{% endblock content %}
