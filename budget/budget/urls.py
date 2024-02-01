@@ -1,7 +1,14 @@
 import django.contrib.auth.views
-from django.urls import path, re_path
+from django.urls import path, re_path, include
 from . import views
 from .views import UploadPaymentFileView, registration_view
+from rest_framework import routers
+from .views import StatementViewSet, CategoryViewSet
+
+router = routers.DefaultRouter()
+router.register(r'statements', StatementViewSet)
+router.register(r'categories', CategoryViewSet)
+
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -16,4 +23,5 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('logout/', views.logout, name='logout'),
     path('register/', registration_view, name='register'),
+    path('api/', include(router.urls)),
     ]

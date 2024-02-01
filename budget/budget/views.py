@@ -1,7 +1,5 @@
-import csv
 import io
 import requests
-import openpyxl
 import pandas as pd
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
@@ -10,16 +8,29 @@ from django.http import HttpResponseRedirect, HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic.edit import FormView
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 import mimetypes
 import chardet
 from .forms import UploadFileForm, RegistrationForm, StatementFilterForm, ChangeCategoryForm
 from .models import Statement, Category
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from urllib.parse import urlencode, parse_qs
+from urllib.parse import urlencode
+from rest_framework import viewsets
+from .serializers import StatementSerializer, CategorySerializer
+
+
+class StatementViewSet(viewsets.ModelViewSet):
+    queryset = Statement.objects.all()
+    serializer_class = StatementSerializer
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 
 def create_paginator(queryset, items_per_page, page_number, request_params):
+    # Создаем пагинатор
     paginator = Paginator(queryset, items_per_page)
     try:
         page = paginator.page(page_number)
@@ -34,6 +45,7 @@ def create_paginator(queryset, items_per_page, page_number, request_params):
 
 
 def home(request):
+    # Отображение записей из базы данных на главное странице
     statements_list = Statement.objects.all().order_by('date')
 
     # Добавляем обработку фильтров по времени
@@ -61,6 +73,7 @@ def home(request):
             end_date = request.GET.get('end_date')
             if start_date and end_date:
                 statements_list = statements_list.filter(date__range=[start_date, end_date])
+
     # Применяем фильтр по категории к исходному queryset перед пагинацией
     selected_category = request.GET.get('category')
     if selected_category:
@@ -69,6 +82,16 @@ def home(request):
     request_params = request.GET.copy()
     paginator, statements = create_paginator(statements_list, 10, request.GET.get('page', 1), urlencode(request_params))
     total_amount = statements_list.aggregate(Sum('amount'))['amount__sum']
+
+    # Добавляем обработку фильтров по карте
+    card_filter = request.GET.get('card_filter')
+    if card_filter:
+        if card_filter == 'TBC':
+            statements_list = statements_list.filter(operation_name__contains='TBC')
+        elif card_filter == 'Priorbank':
+            statements_list = statements_list.filter(operation_name__contains='Priorbank')
+        else:
+            statements_list = Statement.objects.all().order_by('date')
 
     if request.method == 'POST':
         change_category_form = ChangeCategoryForm(request.POST)
@@ -97,7 +120,8 @@ def home(request):
         # Запоминаем параметры фильтрации для использования в пагинаторе
         request_params = request.GET.copy()
         # Создаем новый пагинатор после применения фильтров
-        paginator_filtered, statements_filtered = create_paginator(statements_list, 10, request.GET.get('page', 1), urlencode(request_params))
+        paginator_filtered, statements_filtered = create_paginator(statements_list, 10, request.GET.get('page', 1),
+                                                                   urlencode(request_params))
 
         change_category_forms = [ChangeCategoryForm(initial={'statement_id': statement.id}) for statement in statements]
         # Переопределяем ссылки пагинатора с учетом параметров фильтрации
@@ -105,9 +129,9 @@ def home(request):
             f"?{urlencode(request_params)}&page={page}" for page in paginator_filtered.page_range
         ]
 
-        return render(request, 'home.html', {'statements': zip(statements_filtered, change_category_forms), 'total_amount': total_amount,
-                                              'filter_form': filter_form, 'paginator': paginator_filtered,
-                                              'page_range': page_range})
+        return render(request, 'home.html', {'statements': zip(statements_filtered, change_category_forms),
+                                             'total_amount': total_amount, 'filter_form': filter_form,
+                                             'paginator': paginator_filtered, 'page_range': page_range})
 
 
 def logout(request):
@@ -117,6 +141,7 @@ def logout(request):
 
 
 def login(request):
+    # логирование пользователя
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -193,10 +218,12 @@ def delete(request, id):
 
 
 class UploadPaymentFileView(FormView):
+    # Определяем класс формы
     form_class = UploadFileForm
     template_name = 'drop.html'
 
     def post(self, request, **kwargs):
+        # Обработка загруженного файла
         try:
             uploaded_file = request.FILES['file']
             if 'file' not in request.FILES:
@@ -223,9 +250,8 @@ class UploadPaymentFileView(FormView):
             # Если chardet не смог определить кодировку, используйте кодировку по умолчанию (например, utf-8)
             if detected_encoding is None:
                 detected_encoding = 'utf-8'
-            card_type = self.determine_card_type(uploaded_file)
-            uploaded_file.seek(0)
 
+            uploaded_file.seek(0)
             csv_content = uploaded_file.read().decode(detected_encoding, errors='replace')
             detected_encoding = self.detecting_encoding(csv_content)
             card_type = self.determine_card_type(uploaded_file)
@@ -241,6 +267,7 @@ class UploadPaymentFileView(FormView):
             return HttpResponse(status=500)  # Возвращаем HTTP 500 в случае ошибки
 
     def determine_card_type(self, uploaded_file):
+        # Определение типа карты по имени файла
         if uploaded_file.name.startswith('account_statement'):
             card_type = 'TBC Bank'
             return card_type
@@ -252,6 +279,7 @@ class UploadPaymentFileView(FormView):
             return card_type
 
     def detecting_encoding(self, csv_content):
+        # Определение кодировки файла с использованием chardet
         detector = chardet.universaldetector.UniversalDetector()
         detector.feed(csv_content.encode())
         detector.close()
@@ -265,7 +293,7 @@ class UploadPaymentFileView(FormView):
 
     def read_csv_content(self, csv_content, detected_encoding, card_type):
         if card_type == 'Priorbank':
-            # Заменяем io.StringIO на io.BytesIO и кодировку на bytes
+            # разбор выписки в формате csv в датафрэйм
             io_data = io.BytesIO(csv_content.encode(detected_encoding))
             try:
                 df = pd.read_csv(
@@ -294,6 +322,7 @@ class UploadPaymentFileView(FormView):
             df = df.query("~(amount >= 0)")
 
         elif card_type == 'TBC Bank':
+            # разбор выписки в формате csv в датафрэйм
             mcc_data = pd.read_excel('mcc.xls', header=None, index_col=0, names=['descr'])
             mcc_stock = pd.DataFrame(mcc_data, )
             io_data = io.BytesIO(csv_content.encode(detected_encoding))
@@ -361,6 +390,7 @@ class UploadPaymentFileView(FormView):
         return df
 
     def save_statement(self, df):
+        # Сохранение датафрэйма в базу данных
         for index, column in df.iterrows():
             if not Statement.objects.filter(
                     date=column['date'],
