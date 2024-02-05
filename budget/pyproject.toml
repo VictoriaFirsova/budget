@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "budget"
+version = "0.1.0"
+description = "simple budget app for personal use"
+authors = ["VF"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.10.11"
+Django='4.2.4'
+django-split-settings='1.2.0'
+djangorestframework='3.14.0'
+numpy='1.26.2'
+pandas='2.1.4'
+poetry='1.7.1'
+poetry-core='1.8.1'
+poetry-plugin-export='1.6.0'
+python-magic='0.4.27'
+requests='2.31.0'
+requests-toolbelt='1.0.0'
+virtualenv='20.25.0'
+drf-spectacular='0.27.1'
+django-rest-swagger='2.2.0'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
