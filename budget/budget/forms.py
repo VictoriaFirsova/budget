@@ -26,7 +26,6 @@ class StatementFilterForm(forms.Form):
     )
 
 
-
 class ChangeCategoryForm(forms.Form):
     statement_id = forms.IntegerField(widget=forms.HiddenInput())
     new_category = forms.ModelChoiceField(queryset=Category.objects.all(), empty_label=None)

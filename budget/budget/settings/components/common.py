@@ -13,7 +13,7 @@ SECRET_KEY = 'django-insecure-swjjm(-sbf4k*jcjv(ne5i9xc1utsf6^lj^&3ee_e()u0cmo%d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -27,6 +27,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'budget',
     'rest_framework',
+    'rest_framework_swagger',
+    'drf_spectacular',
+    'API',
 ]
 
 MIDDLEWARE = [
@@ -37,9 +40,26 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'budget.urls'
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Budget API',
+    'DESCRIPTION': 'API for Budget App',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # OTHER SETTINGS
+}
 
 TEMPLATES = [
     {
@@ -58,22 +78,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'budget.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': '3904',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

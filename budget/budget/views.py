@@ -15,18 +15,6 @@ from .forms import UploadFileForm, RegistrationForm, StatementFilterForm, Change
 from .models import Statement, Category
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from urllib.parse import urlencode
-from rest_framework import viewsets
-from .serializers import StatementSerializer, CategorySerializer
-
-
-class StatementViewSet(viewsets.ModelViewSet):
-    queryset = Statement.objects.all()
-    serializer_class = StatementSerializer
-
-
-class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
 
 
 def create_paginator(queryset, items_per_page, page_number, request_params):
