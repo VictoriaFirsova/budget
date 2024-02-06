@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,11 +26,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'budget',
+    'budget.backend.apps.budget',
     'rest_framework',
     'rest_framework_swagger',
     'drf_spectacular',
-    'API',
+
 ]
 
 MIDDLEWARE = [
@@ -43,7 +44,7 @@ MIDDLEWARE = [
 
 ]
 
-ROOT_URLCONF = 'budget.urls'
+ROOT_URLCONF = 'backend.server.urls'
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
@@ -54,8 +55,8 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Budget API',
-    'DESCRIPTION': 'API for Budget App',
+    'TITLE': 'Budget api',
+    'DESCRIPTION': 'api for Budget App',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     # OTHER SETTINGS
@@ -64,7 +65,7 @@ SPECTACULAR_SETTINGS = {
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['frontend/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -77,7 +78,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'budget.wsgi.application'
+WSGI_APPLICATION = 'backend.apps.budget.wsgi.application'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

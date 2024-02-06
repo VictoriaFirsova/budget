@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from budget.budget.models import Statement, Category
+from budget.backend.apps.budget.models import Statement, Category
 
 
 class StatementSerializer(serializers.ModelSerializer):
