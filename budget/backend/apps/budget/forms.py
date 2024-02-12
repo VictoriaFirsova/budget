@@ -10,11 +10,13 @@ class UploadFileForm(forms.Form):
 
 
 class RegistrationForm(UserCreationForm):
-    email = forms.EmailField(max_length=254, help_text='Required. Enter a valid email address.')
+    email = forms.EmailField(
+        max_length=254, help_text="Required. Enter a valid email address."
+    )
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2']
+        fields = ["username", "email", "password1", "password2"]
 
 
 class StatementFilterForm(forms.Form):
@@ -28,4 +30,6 @@ class StatementFilterForm(forms.Form):
 
 class ChangeCategoryForm(forms.Form):
     statement_id = forms.IntegerField(widget=forms.HiddenInput())
-    new_category = forms.ModelChoiceField(queryset=Category.objects.all(), empty_label=None)
+    new_category = forms.ModelChoiceField(
+        queryset=Category.objects.all(), empty_label=None
+    )
