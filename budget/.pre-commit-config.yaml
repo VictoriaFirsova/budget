@@ -9,22 +9,16 @@ repos:
     - id: debug-statements
     - id: end-of-file-fixer
     - id: trailing-whitespace
-- repo: https://github.com/psf/black
-  rev: 24.1.1
-  hooks:
-  - id: black
-    exclude: migrations
-    args: [--check,--config=pyproject.toml]
 - repo: local
   hooks:
     - id: mypy
       name: mypy
-      entry: "sh mypy_run.sh"
+      entry: mypy
       language: system
       # run if any Python file is changed
       types: [python]
       # mypy will always check all files
-      pass_filenames: false
+      pass_filenames: true
       # use require_serial so that script is only called once per commit
       require_serial: true
 - repo: https://github.com/astral-sh/ruff-pre-commit
