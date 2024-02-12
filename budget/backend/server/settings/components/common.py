@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -30,6 +29,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_swagger",
     "drf_spectacular",
+    "extra_checks",
 ]
 
 MIDDLEWARE = [
@@ -60,6 +60,7 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
     # OTHER SETTINGS
 }
+
 
 TEMPLATES = [
     {
