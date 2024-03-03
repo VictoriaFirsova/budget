@@ -54,6 +54,7 @@ django-stubs-ext = "4.2.7"
 djangorestframework-stubs = "^3.14.5"
 django-extra-checks = "^0.13.3"
 zipp = "^3.17.0"
+pandas-stubs = "^2.1.4.231227"
 
 
 [build-system]
@@ -61,7 +62,14 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
+mypy_path = './budget'
 plugins = ["mypy_django_plugin.main", 'mypy_drf_plugin.main']
+strict_optional = 'True'
+exclude = [
+    'models.py',]
+
+[mypy.plugins.django-stubs]
+django_settings_module = "backend.server.settings"
 
 [tool.django-stubs]
 django_settings_module = "backend.server.settings"
