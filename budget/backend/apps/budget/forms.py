@@ -6,10 +6,14 @@ from .models import Category
 
 
 class UploadFileForm(forms.Form):
+    """Форма для загрузки файла."""
+
     file = forms.FileField(label="Файл")
 
 
 class RegistrationForm(UserCreationForm):
+    """Форма для регистрации пользователя."""
+
     email = forms.EmailField(
         max_length=254, help_text="Required. Enter a valid email address."
     )
@@ -20,6 +24,8 @@ class RegistrationForm(UserCreationForm):
 
 
 class StatementFilterForm(forms.Form):
+    """Форма для фильтрации заявок."""
+
     category = forms.ModelChoiceField(
         queryset=Category.objects.all(),
         empty_label="Выбор категории",
@@ -29,6 +35,8 @@ class StatementFilterForm(forms.Form):
 
 
 class ChangeCategoryForm(forms.Form):
+    """Форма для изменения категории"""
+
     statement_id = forms.IntegerField(widget=forms.HiddenInput())
     new_category = forms.ModelChoiceField(
         queryset=Category.objects.all(), empty_label=None

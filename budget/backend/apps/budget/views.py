@@ -4,7 +4,7 @@ import pandas as pd
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.db.models import Sum
-from django.http import HttpResponseRedirect, HttpResponseNotFound, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic.edit import FormView
@@ -23,7 +23,13 @@ from urllib.parse import urlencode
 
 
 def create_paginator(queryset, items_per_page, page_number, request_params):
-    # Создаем пагинатор
+    """Создание пагинатора с сохранением параметров фильтрации в ссылках пагинатора.
+    parameters: queryset - исходный queryset,
+          items_per_page - количество записей на странице,
+          page_number - номер страницы,
+          request_params - параметры фильтрации.
+    return: paginator - объект пагинатора,
+            page - объект страницы с записями и параметрами фильтрации."""
     paginator = Paginator(queryset, items_per_page)
     try:
         page = paginator.page(page_number)
@@ -38,7 +44,8 @@ def create_paginator(queryset, items_per_page, page_number, request_params):
 
 
 def home(request):
-    # Отображение записей из базы данных на главное странице
+    """Отображение записей из базы данных на главное странице
+    parametesrs: request - объект запроса."""
     statements_list = Statement.objects.all().order_by("date")
 
     # Добавляем обработку фильтров по времени
@@ -147,13 +154,18 @@ def home(request):
 
 
 def logout(request):
+    """Выход пользователя из системы.
+    parameters: request - объект запроса.
+    return: главная страница."""
     if request.user.is_authenticated:
         auth_logout(request)
         return render(request, "home.html")
 
 
 def login(request):
-    # логирование пользователя
+    """Аутентификация пользователя.
+    parameters: request - объект запроса.
+    return: страница с формой аутентификации."""
     if request.method == "POST":
         username = request.POST["username"]
         password = request.POST["password"]
@@ -170,6 +182,9 @@ def login(request):
 
 
 def registration_view(request):
+    """Регистрация пользователя.
+    parameters: request - объект запроса.
+    return: форма регистрации."""
     if request.method == "POST":
         form = RegistrationForm(request.POST)
         if form.is_valid():
@@ -182,23 +197,27 @@ def registration_view(request):
     return render(request, "registration/registration.html", {"form": form})
 
 
-def drop(request):
-    return render(request, "drop.html")
+"""def drop(request):
+    return render(request, "drop.html")"""
 
 
-# получение данных из бд
 def categories_list(request):
+    """Отображение списка категорий.
+    parameters: request - объект запроса.
+    return: список категорий."""
     categories = Category.objects.all().order_by("title")
     return render(request, "categories_list.html", {"categories": categories})
 
 
 def statements_list(request):
+    """Отображение списка операций.
+    parameters: request - объект запроса.
+    return: список операций."""
     statements = Statement.objects.order_by("date").all()[:10]
     return render(request, "home.html", {"statements": statements})
 
 
-# сохранение данных в бд
-def create(request):
+"""def create(request):
     if request.method == "POST":
         tom = Category()
         tom.title = request.POST.get("title")
@@ -228,16 +247,20 @@ def delete(request, id):
         category.delete()
         return HttpResponseRedirect("/categories_list")
     except Category.DoesNotExist:
-        return HttpResponseNotFound("<h2>Category not found</h2>")
+        return HttpResponseNotFound("<h2>Category not found</h2>")"""
 
 
 class UploadPaymentFileView(FormView):
-    # Определяем класс формы
+    """Загрузка файла с выпиской.
+    parameters: FormView - класс формы.
+    return: страница загрузки файла в случае ошибки или домашняя страница в случае успеха.
+    """
+
     form_class = UploadFileForm
     template_name = "drop.html"
 
     def post(self, request, **kwargs):
-        # Обработка загруженного файла
+        """Обработка загруженного файла."""
         try:
             uploaded_file = request.FILES["file"]
             if "file" not in request.FILES:
@@ -292,7 +315,9 @@ class UploadPaymentFileView(FormView):
             return HttpResponse(status=500)  # Возвращаем HTTP 500 в случае ошибки
 
     def determine_card_type(self, uploaded_file):
-        # Определение типа карты по имени файла
+        """Определение типа карты по имени файла
+        parameters: uploaded_file - загруженный файл.
+        return: тип карты."""
         if uploaded_file.name.startswith("account_statement"):
             card_type = "TBC Bank"
             return card_type
@@ -304,7 +329,9 @@ class UploadPaymentFileView(FormView):
             return card_type
 
     def detecting_encoding(self, csv_content):
-        # Определение кодировки файла с использованием chardet
+        """Определение кодировки файла с использованием chardet
+        parameters: csv_content - содержимое csv-файла.
+        return: предполагаемая кодировка."""
         detector = chardet.universaldetector.UniversalDetector()
         detector.feed(csv_content.encode())
         detector.close()
@@ -317,6 +344,9 @@ class UploadPaymentFileView(FormView):
         return detected_encoding
 
     def read_csv_content(self, csv_content, detected_encoding, card_type):
+        """Чтение содержимого csv-файла и преобразование его в датафрейм pandas в зависимости от типа карты
+        parameters: csv_content - содержимое csv-файла,
+        return: датафрейм pandas."""
         if card_type == "Priorbank":
             # разбор выписки в формате csv в датафрэйм
             io_data = io.BytesIO(csv_content.encode(detected_encoding))
@@ -400,13 +430,16 @@ class UploadPaymentFileView(FormView):
                         except BaseException as e:
                             print(e)
                             continue
-                except:
+                except Exception as e:
+                    print(f"An error occurred: {e}")
                     continue
 
         return df
 
     def change_rate(self, df):
-        # Преобразование суммы, если валюта не USD
+        """Конвертация сумм в USD
+        parameters: df - датафрейм pandas.
+        return: датафрейм pandas с валютой только USD."""
         for index, row in df.iterrows():
             amount = row["amount"]
             date = row["date"]
@@ -439,7 +472,9 @@ class UploadPaymentFileView(FormView):
         return df
 
     def save_statement(self, df):
-        # Сохранение датафрэйма в базу данных
+        """Сохранение данных в базу данных.
+        parameters: df - датафрейм pandas.
+        return: ничего не возвращает"""
         for index, column in df.iterrows():
             if not Statement.objects.filter(
                 date=column["date"],
@@ -459,7 +494,9 @@ class UploadPaymentFileView(FormView):
                 )
 
     def get_category(self, category_name):
-        # Словарь, связывающий имена категорий из ваших данных с именами категорий в модели Django
+        """Словарь, связывающий имена категорий из ваших данных с именами категорий в модели Django
+        parameters: category_name - имя категории из ваших данных.
+        return: категория в модели Django."""
         categories_mapping = {
             "Бензин": [
                 "АЗС",

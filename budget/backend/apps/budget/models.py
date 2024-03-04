@@ -1,7 +1,10 @@
 from django.db import models
 
 
+# type: ignore
 class Category(models.Model):
+    """Модель категории."""
+
     title = models.CharField(max_length=250)
 
     def __str__(self):
@@ -11,7 +14,10 @@ class Category(models.Model):
         verbose_name_plural = "categories"
 
 
+# type: ignore
 class Statement(models.Model):
+    """Модель операции"""
+
     date = models.DateField()
     operation_name = models.CharField(max_length=200)
     amount = models.DecimalField(decimal_places=2, max_digits=15)
