@@ -4,58 +4,28 @@ version = "0.1.0"
 description = "simple budget app for personal use"
 authors = ["VF"]
 readme = "README.md"
+packages = [
+    { include = "*" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-Django='4.2.4'
-chardet='5.2.0'
-charset-normalizer='3.3.2'
-django-split-settings='1.2.0'
-djangorestframework='3.14.0'
-pandas='2.1.4'
-poetry='1.7.1'
-poetry-core='1.8.1'
-python-magic='0.4.27'
-drf-spectacular='0.27.1'
-django-rest-swagger='2.2.0'
-click='8.1.7'
-coreapi='2.3.3'
-coreschema='0.0.4'
-distlib='0.3.8'
-importlib-metadata='7.0.1'
-itypes='1.2.0'
-Jinja2='3.1.3'
-more-itertools='10.2.0'
-openapi-codec='1.3.2'
-openpyxl='3.1.2'
-pipx='1.4.3'
-psycopg2='2.9.7'
-python-dateutil='2.8.2'
-pytz='2023.3.post1'
-pywin32-ctypes='0.2.2'
-pyyaml='6.0.1'
-react='4.3.0'
-rapidfuzz='3.6.1'
-referencing='0.33.0'
-urllib3='2.1.0'
-simplejson='3.19.2'
-six='1.16.0'
-tomli='2.0.1'
-typing_extensions='4.7.1'
-userpath='1.9.1'
-xlrd='2.0.1'
-mypy = "1.8.0"
-virtualenv = "^20.25.0"
-pip = ">=24.0"
-pre-commit = "^3.6.1"
-ruff = "^0.2.1"
-django-stubs = "4.2.7"
-django-stubs-ext = "4.2.7"
-djangorestframework-stubs = "^3.14.5"
-django-extra-checks = "^0.13.3"
-zipp = "^3.17.0"
-pandas-stubs = "^2.1.4.231227"
+django = '4.2.4'
+django-split-settings = "^1.2.0"
+djangorestframework = "^3.14.0"
+django-rest-swagger = "^2.2.0"
+drf-spectacular = "^0.27.1"
+django-extra-checks = "^0.14.0"
+psycopg2 = "^2.9.9"
+pandas = "^2.2.1"
+chardet = "^5.2.0"
 
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.9.0"
+ruff = "^0.3.3"
+pre-commit = "^3.6.2"
+django-stubs = "^4.2.7"
 
 [build-system]
 requires = ["poetry-core"]
@@ -65,8 +35,7 @@ build-backend = "poetry.core.masonry.api"
 mypy_path = './budget'
 plugins = ["mypy_django_plugin.main", 'mypy_drf_plugin.main']
 strict_optional = 'True'
-exclude = [
-    'models.py',]
+exclude = ["budget/backend/apps/budget/models.py"]
 
 [mypy.plugins.django-stubs]
 django_settings_module = "backend.server.settings"
