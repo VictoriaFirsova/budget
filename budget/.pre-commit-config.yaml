@@ -18,9 +18,10 @@ repos:
       # run if any Python file is changed
       types: [python]
       # mypy will always check all files
-      pass_filenames: true
+      pass_filenames: false
       # use require_serial so that script is only called once per commit
       require_serial: true
+
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
   rev: v0.2.1
