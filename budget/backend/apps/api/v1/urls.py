@@ -4,7 +4,7 @@ from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework import routers
-from budget.backend.apps.api.v1.budget_api.views import (
+from apps.api.v1.budget_api.views import (
     StatementViewSet,
     CategoryViewSet,
 )
@@ -16,7 +16,7 @@ router.register(r"categories", CategoryViewSet)
 urlpatterns = [
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="docs"),
-    path("", include("budget.backend.apps.budget.urls")),
+    path("", include("apps.budget.urls")),
     path(
         "statements/", StatementViewSet.as_view({"get": "list"}), name="statements-list"
     ),
