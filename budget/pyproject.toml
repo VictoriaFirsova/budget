@@ -22,23 +22,39 @@ chardet = "^5.2.0"
 
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^1.9.0"
+mypy = "1.7.1"
 ruff = "^0.3.3"
 pre-commit = "^3.6.2"
 django-stubs = "^4.2.7"
+pandas-stubs = "^2.2.1.240316"
+djangorestframework-stubs = {extras = ["compatible-mypy"], version = "^3.14.5"}
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
-mypy_path = './budget'
-plugins = ["mypy_django_plugin.main", 'mypy_drf_plugin.main']
+mypy_path = 'backend/apps'
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 strict_optional = 'True'
-exclude = ["budget/backend/apps/budget/models.py"]
+python_version = "3.11"
+check_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+follow_imports = "normal"
+
 
 [mypy.plugins.django-stubs]
 django_settings_module = "backend.server.settings"
+strict_settings = false
+ignore_missing_settings = true
+ignore_missing_model_attributes = true
+
+[[tool.mypy.overrides]]
+# Django migrations should not produce any errors:
+module = "*.migrations.*"
+ignore_errors = true
 
 [tool.django-stubs]
 django_settings_module = "backend.server.settings"
