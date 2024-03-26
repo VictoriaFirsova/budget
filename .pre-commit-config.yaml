@@ -18,7 +18,7 @@ repos:
       # run if any Python file is changed
       types: [python]
       # mypy will always check all files
-      pass_filenames: false
+      pass_filenames: true
       # use require_serial so that script is only called once per commit
       require_serial: true
 

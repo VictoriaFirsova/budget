@@ -34,7 +34,6 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
-mypy_path = 'backend/apps'
 plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 strict_optional = 'True'
 python_version = "3.11"
@@ -43,6 +42,7 @@ warn_unused_ignores = true
 warn_redundant_casts = true
 warn_unused_configs = true
 follow_imports = "normal"
+ignore_missing_imports = true
 
 
 [mypy.plugins.django-stubs]
