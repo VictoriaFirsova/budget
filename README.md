@@ -8,23 +8,24 @@
 1. Клонируйте репозиторий:
 git clone <https://github.com/VictoriaFirsova/budget/>
 2. Установите poetry глобально, если ранее не установили
-curl -sSL https://install.python-poetry.org | python3 -
+`curl -sSL https://install.python-poetry.org | python3 -`
 3. Настройте создание/использование виртуальной среды для poetry
-poetry config virtualenvs.in-project true
+`poetry config virtualenvs.in-project true`
 4. Укажите poetry путь к python3.11
-poetry env use путь/к/python.exe
+`poetry env use путь/к/python.exe`
 На этом шаге poetry создаст виртуальную среду в корневом каталоге .venv
 Далее я выбираю ее и для интерпретатора в Pycharm
 5. Перейдите в директорию проекта:
-cd budget
+`cd budget`
 6. Установите зависимости с помощью Poetry:
-poetry install
+`poetry install`
 7. Перейдите в директорию backend:
-cd backend
+`cd backend`
 8. Запустите миграции для создания базы данных:
-python manage.py makemigrations
-python manage.py migrate
+`python manage.py makemigrations
+python manage.py migrate`
 9. Запустите сервер Django:
+`python manage.py runserver`
 10. Откройте браузер и перейдите по адресу `http://127.0.0.1:8000/` для доступа к приложению.
 
 ## Использование

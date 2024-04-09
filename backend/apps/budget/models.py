@@ -1,7 +1,6 @@
 from django.db import models
 
 
-# type: ignore
 class Category(models.Model):
     """Модель категории."""
 
@@ -14,7 +13,6 @@ class Category(models.Model):
         verbose_name_plural = "categories"
 
 
-# type: ignore
 class Statement(models.Model):
     """Модель операции"""
 

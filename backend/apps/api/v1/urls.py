@@ -1,4 +1,3 @@
-from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
 from django.conf import settings
@@ -24,7 +23,7 @@ urlpatterns = [
     path(
         "categories/<int:id>/",
         CategoryViewSet.as_view({"get": "list"}),
-        name="category-list",
+        name="category-detail",
     ),
     path(
         "statements/<int:pk>/",
