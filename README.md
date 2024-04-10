@@ -6,9 +6,13 @@
 
 ## Установка
 1. Клонируйте репозиторий:
+
 ```git clone <https://github.com/VictoriaFirsova/budget/>```
+
 2. Установите poetry глобально, если ранее не установили
+
 ```curl -sSL https://install.python-poetry.org | python3 -```
+
 3. Настройте создание/использование виртуальной среды для poetry
 ```poetry config virtualenvs.in-project true```
 4. Укажите poetry путь к python3.11
