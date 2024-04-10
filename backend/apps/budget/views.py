@@ -23,7 +23,9 @@ from urllib.parse import urlencode
 from typing import Tuple, Dict, Any
 
 
-def create_paginator(queryset: Any, items_per_page: int, page_number: int, request_params: Dict[str, Any]) -> Tuple[Paginator, Page]:
+def create_paginator(
+    queryset: Any, items_per_page: int, page_number: int, request_params: Dict[str, Any]
+) -> Tuple[Paginator, Page]:
     """Создание пагинатора с сохранением параметров фильтрации в ссылках пагинатора.
     parameters: queryset - исходный queryset,
           items_per_page - количество записей на странице,
@@ -344,7 +346,9 @@ class UploadPaymentFileView(FormView):
             detected_encoding = "utf-8"
         return detected_encoding
 
-    def read_csv_content(self, csv_content, detected_encoding, card_type) -> pd.DataFrame:
+    def read_csv_content(
+        self, csv_content, detected_encoding, card_type
+    ) -> pd.DataFrame:
         """Чтение содержимого csv-файла и преобразование его в датафрейм pandas в зависимости от типа карты
         parameters: csv_content - содержимое csv-файла,
         return: датафрейм pandas."""
