@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from .serializers import StatementSerializer, CategorySerializer
-from apps.budget.models import Statement, Category
+from backend.apps.budget.models import Statement, Category
 
 
 class StatementViewSet(viewsets.ModelViewSet):

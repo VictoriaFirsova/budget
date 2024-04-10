@@ -4,7 +4,7 @@ import pandas as pd
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.db.models import Sum
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic.edit import FormView
@@ -18,11 +18,12 @@ from .forms import (
     ChangeCategoryForm,
 )
 from .models import Statement, Category
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger, Page
 from urllib.parse import urlencode
+from typing import Tuple, Dict, Any
 
 
-def create_paginator(queryset, items_per_page, page_number, request_params):
+def create_paginator(queryset: Any, items_per_page: int, page_number: int, request_params: Dict[str, Any]) -> Tuple[Paginator, Page]:
     """Создание пагинатора с сохранением параметров фильтрации в ссылках пагинатора.
     parameters: queryset - исходный queryset,
           items_per_page - количество записей на странице,
@@ -43,7 +44,7 @@ def create_paginator(queryset, items_per_page, page_number, request_params):
     return paginator, page
 
 
-def home(request):
+def home(request: HttpRequest) -> HttpResponse:
     """Отображение записей из базы данных на главное странице
     parametesrs: request - объект запроса."""
     statements_list = Statement.objects.all().order_by("date")
@@ -153,7 +154,7 @@ def home(request):
         )
 
 
-def logout(request):
+def logout(request: HttpRequest) -> HttpResponse:
     """Выход пользователя из системы.
     parameters: request - объект запроса.
     return: главная страница."""
@@ -162,7 +163,7 @@ def logout(request):
         return render(request, "home.html")
 
 
-def login(request):
+def login(request: HttpRequest) -> HttpResponse:
     """Аутентификация пользователя.
     parameters: request - объект запроса.
     return: страница с формой аутентификации."""
@@ -181,7 +182,7 @@ def login(request):
     return render(request, "registration/login.html")
 
 
-def registration_view(request):
+def registration_view(request: HttpRequest) -> HttpResponse:
     """Регистрация пользователя.
     parameters: request - объект запроса.
     return: форма регистрации."""
@@ -201,7 +202,7 @@ def registration_view(request):
     return render(request, "drop.html")"""
 
 
-def categories_list(request):
+def categories_list(request: HttpRequest) -> HttpResponse:
     """Отображение списка категорий.
     parameters: request - объект запроса.
     return: список категорий."""
@@ -209,7 +210,7 @@ def categories_list(request):
     return render(request, "categories_list.html", {"categories": categories})
 
 
-def statements_list(request):
+def statements_list(request: HttpRequest) -> HttpResponse:
     """Отображение списка операций.
     parameters: request - объект запроса.
     return: список операций."""
@@ -259,7 +260,7 @@ class UploadPaymentFileView(FormView):
     form_class = UploadFileForm
     template_name = "drop.html"
 
-    def post(self, request, **kwargs):
+    def post(self, request: HttpRequest, **kwargs) -> HttpResponse:
         """Обработка загруженного файла."""
         try:
             uploaded_file = request.FILES["file"]
@@ -314,7 +315,7 @@ class UploadPaymentFileView(FormView):
             print(f"An error occurred: {e}")
             return HttpResponse(status=500)  # Возвращаем HTTP 500 в случае ошибки
 
-    def determine_card_type(self, uploaded_file):
+    def determine_card_type(self, uploaded_file) -> str:
         """Определение типа карты по имени файла
         parameters: uploaded_file - загруженный файл.
         return: тип карты."""
@@ -328,7 +329,7 @@ class UploadPaymentFileView(FormView):
             card_type = "Unknown"
             return card_type
 
-    def detecting_encoding(self, csv_content):
+    def detecting_encoding(self, csv_content) -> str:
         """Определение кодировки файла с использованием chardet
         parameters: csv_content - содержимое csv-файла.
         return: предполагаемая кодировка."""
@@ -343,7 +344,7 @@ class UploadPaymentFileView(FormView):
             detected_encoding = "utf-8"
         return detected_encoding
 
-    def read_csv_content(self, csv_content, detected_encoding, card_type):
+    def read_csv_content(self, csv_content, detected_encoding, card_type) -> pd.DataFrame:
         """Чтение содержимого csv-файла и преобразование его в датафрейм pandas в зависимости от типа карты
         parameters: csv_content - содержимое csv-файла,
         return: датафрейм pandas."""
@@ -436,7 +437,7 @@ class UploadPaymentFileView(FormView):
 
         return df
 
-    def change_rate(self, df):
+    def change_rate(self, df: pd.DataFrame) -> pd.DataFrame:
         """Конвертация сумм в USD
         parameters: df - датафрейм pandas.
         return: датафрейм pandas с валютой только USD."""
@@ -471,7 +472,7 @@ class UploadPaymentFileView(FormView):
                     print(f"An error occurred: {e}")
         return df
 
-    def save_statement(self, df):
+    def save_statement(self, df: pd.DataFrame):
         """Сохранение данных в базу данных.
         parameters: df - датафрейм pandas.
         return: ничего не возвращает"""
@@ -493,7 +494,7 @@ class UploadPaymentFileView(FormView):
                     my_category=my_category,
                 )
 
-    def get_category(self, category_name):
+    def get_category(self, category_name: str) -> str:
         """Словарь, связывающий имена категорий из ваших данных с именами категорий в модели Django
         parameters: category_name - имя категории из ваших данных.
         return: категория в модели Django."""
