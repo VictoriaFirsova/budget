@@ -19,6 +19,7 @@ django-extra-checks = "^0.14.0"
 psycopg2 = "^2.9.9"
 pandas = "^2.2.1"
 chardet = "^5.2.0"
+python-dotenv = "^1.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -28,6 +29,8 @@ pre-commit = "^3.6.2"
 django-stubs = "^4.2.7"
 pandas-stubs = "^2.2.1.240316"
 djangorestframework-stubs = {extras = ["compatible-mypy"], version = "^3.14.5"}
+django-environ = "^0.11.2"
+pytest = "^8.1.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -43,6 +46,7 @@ warn_redundant_casts = true
 warn_unused_configs = true
 follow_imports = "normal"
 ignore_missing_imports = true
+python_paths = "budget_app/backend/apps"
 
 
 [mypy.plugins.django-stubs]
