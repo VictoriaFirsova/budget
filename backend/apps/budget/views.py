@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.db.models import Sum
 from django.http import HttpResponse, HttpRequest
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.generic.edit import FormView
 from datetime import datetime, timedelta
@@ -42,7 +42,8 @@ def create_paginator(
         page = paginator.page(paginator.num_pages)
 
     # Сохраняем параметры фильтрации в ссылках пагинатора
-    page.object_list.request_params = request_params
+    setattr(page.object_list, "request_params", request_params)
+
     return paginator, page
 
 
@@ -85,6 +86,7 @@ def home(request: HttpRequest) -> HttpResponse:
         statements_list = statements_list.filter(my_category=selected_category)
     # Запоминаем параметры фильтрации для использования в пагинаторе
     request_params = request.GET.copy()
+
     paginator, statements = create_paginator(
         statements_list, 10, request.GET.get("page", 1), urlencode(request_params)
     )
@@ -92,16 +94,15 @@ def home(request: HttpRequest) -> HttpResponse:
 
     # Добавляем обработку фильтров по карте
     card_filter = request.GET.get("card_filter")
+    statements_list = Statement.objects.all().order_by("date")
+
     if card_filter:
         if card_filter == "TBC":
-            statements_list = statements_list.filter(operation_name__contains="TBC")
+            statements_list = statements_list.filter(card__icontains="TBC")
         elif card_filter == "Priorbank":
-            statements_list = statements_list.filter(
-                operation_name__contains="Priorbank"
-            )
+            statements_list = statements_list.filter(card__icontains="Priorbank")
         else:
             statements_list = Statement.objects.all().order_by("date")
-
     if request.method == "POST":
         change_category_form = ChangeCategoryForm(request.POST)
         if change_category_form.is_valid():
@@ -154,6 +155,7 @@ def home(request: HttpRequest) -> HttpResponse:
                 "page_range": page_range,
             },
         )
+    return HttpResponse()
 
 
 def logout(request: HttpRequest) -> HttpResponse:
@@ -163,6 +165,8 @@ def logout(request: HttpRequest) -> HttpResponse:
     if request.user.is_authenticated:
         auth_logout(request)
         return render(request, "home.html")
+    else:
+        return render(request, "login.html")
 
 
 def login(request: HttpRequest) -> HttpResponse:
@@ -200,16 +204,20 @@ def registration_view(request: HttpRequest) -> HttpResponse:
     return render(request, "registration/registration.html", {"form": form})
 
 
-"""def drop(request):
-    return render(request, "drop.html")"""
-
-
 def categories_list(request: HttpRequest) -> HttpResponse:
     """Отображение списка категорий.
     parameters: request - объект запроса.
     return: список категорий."""
-    categories = Category.objects.all().order_by("title")
-    return render(request, "categories_list.html", {"categories": categories})
+    categories = Category.objects.all()
+    category_to_edit = None
+    if "edit_id" in request.GET:
+        category_to_edit = get_object_or_404(Category, id=request.GET["edit_id"])
+
+    return render(
+        request,
+        "categories_list.html",
+        {"categories": categories, "category_to_edit": category_to_edit},
+    )
 
 
 def statements_list(request: HttpRequest) -> HttpResponse:
@@ -220,37 +228,45 @@ def statements_list(request: HttpRequest) -> HttpResponse:
     return render(request, "home.html", {"statements": statements})
 
 
-"""def create(request):
+def create(request):
+    """Создание новой категории.
+    parameters: request - объект запроса.
+    return: список категорий."""
     if request.method == "POST":
         tom = Category()
         tom.title = request.POST.get("title")
         tom.save()
-    return HttpResponseRedirect("/categories_list")
+    return redirect("categories_list")
 
 
-# изменение данных в бд
 def edit(request, id):
+    """Изменение выбранной категории.
+    parameters: request - объект запроса,
+                id - уникальный ключ категории в базе данных.
+    return: список категорий."""
     try:
         category = Category.objects.get(id=id)
 
         if request.method == "POST":
             category.title = request.POST.get("title")
             category.save()
-            return HttpResponseRedirect("/categories_list")
-        else:
-            return render(request, "edit.html", {"category": category})
+            return redirect("categories_list")
+
     except Category.DoesNotExist:
-        return HttpResponseNotFound("<h2>Category not found</h2>")
+        return HttpResponse("<h2>Category not found</h2>")
 
 
-# удаление данных из бд
 def delete(request, id):
+    """Удаление выбранной категории.
+    parameters: request - объект запроса,
+                id - уникальный ключ категории в базе данных.
+    return: список категорий."""
     try:
         category = Category.objects.get(id=id)
         category.delete()
-        return HttpResponseRedirect("/categories_list")
+        return redirect("categories_list")
     except Category.DoesNotExist:
-        return HttpResponseNotFound("<h2>Category not found</h2>")"""
+        return HttpResponse("<h1>Category not found</h1>")
 
 
 class UploadPaymentFileView(FormView):
@@ -304,9 +320,9 @@ class UploadPaymentFileView(FormView):
             card_type = self.determine_card_type(uploaded_file)
             uploaded_file.seek(0)
             self.save_statement(
-                self.change_rate(
-                    self.read_csv_content(csv_content, detected_encoding, card_type)
-                )
+                # self.change_rate(   убрать после отладки
+                self.read_csv_content(csv_content, detected_encoding, card_type)
+                # )
             )
 
             uploaded_file.seek(0)
@@ -346,6 +362,38 @@ class UploadPaymentFileView(FormView):
             detected_encoding = "utf-8"
         return detected_encoding
 
+    def get_mcc_category(self, df):
+        mcc_data = pd.read_excel(
+            "backend/apps/budget/mcc.xls", header=None, index_col=0, names=["descr"]
+        )
+        mcc_stock = pd.DataFrame(
+            mcc_data,
+        )
+        for i in df.iterrows():
+            df.loc[i[0], "category"] = "Другое"
+
+            type_desc = i[1].iloc[1]
+            try:
+                num = type_desc.index("MCC")
+                type_op = int(type_desc[(num + 5) : (num + 9)])
+
+                if (
+                    df.loc[i[0], "category"] == "Другое"
+                    or df.loc[i[0], "category"] == "nan"
+                ):
+                    try:
+                        mcc_category = mcc_stock.loc[type_op]
+                        df.loc[i[0], "category"] = mcc_category["descr"]
+                        if "ATM CASH" in type_desc:
+                            df.loc[i[0], "category"] = "Наличные"
+                    except BaseException as e:
+                        print(e)
+                        continue
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                continue
+        return df
+
     def read_csv_content(
         self, csv_content, detected_encoding, card_type
     ) -> pd.DataFrame:
@@ -360,8 +408,8 @@ class UploadPaymentFileView(FormView):
                     io_data,
                     index_col=False,
                     delimiter=";",
-                    skiprows=25,
-                    # nrows=1,  # убрать после отладки
+                    skiprows=18,
+                    # nrows=10,  # убрать после отладки
                     encoding=detected_encoding,
                     names=[
                         "date",
@@ -371,7 +419,7 @@ class UploadPaymentFileView(FormView):
                         "dateop",
                         "com",
                         "ob",
-                        "card",
+                        "ob1",
                         "category",
                     ],
                 )
@@ -382,23 +430,31 @@ class UploadPaymentFileView(FormView):
 
                 df = pd.DataFrame()
             df = df.dropna(subset=["date"])
-            df.drop(["dateop", "com", "ob", "card"], inplace=True, axis=1)
+            df.drop(
+                [
+                    "dateop",
+                    "com",
+                    "ob",
+                    "ob1",
+                ],
+                inplace=True,
+                axis=1,
+            )
             df["amount"] = df["amount"].str.replace(",", ".")
             df["amount"] = df["amount"].str.replace(" ", "")
             df["amount"] = pd.to_numeric(df["amount"])
-            df["amount"] = df["amount"].apply(lambda x: x * -1)
+            df["amount"] = df["amount"].apply(lambda x: x * -1)  # проверить работу
+            # df.column = df.column / n иили такой вариант
             df["date"] = pd.to_datetime(df["date"], dayfirst=True)
             df["date"] = df["date"].dt.date
-            df = df.query("~(amount >= 0)")
+            # df = df.query("~(amount >= 0)")
+            # df = df.assign(Name='card')
+            df["card"] = "Priorbank"
+            return df
 
         elif card_type == "TBC Bank":
             # разбор выписки в формате csv в датафрэйм
-            mcc_data = pd.read_excel(
-                "mcc.xls", header=None, index_col=0, names=["descr"]
-            )
-            mcc_stock = pd.DataFrame(
-                mcc_data,
-            )
+
             io_data = io.BytesIO(csv_content.encode(detected_encoding))
             data = pd.read_csv(
                 io_data,
@@ -410,34 +466,15 @@ class UploadPaymentFileView(FormView):
             df.columns = df.columns.str.replace("Description", "operation_name")
             df.columns = df.columns.str.replace("Date", "date")
             df.columns = df.columns.str.replace("Paid Out", "amount")
+            df = df.query("amount > 0")
             df["date"] = pd.to_datetime(df["date"], format="%d/%m/%Y")
             df["date"] = df["date"].dt.date
             df = df.iloc[:, [0, 1, 3]]
+            df["currency"] = "USD"
+            df["card"] = "TBC"
+            df = df[df["operation_name"].str.contains("Salary") == False]
             df = df.dropna()
-            for i in df.iterrows():
-                df.loc[i[0], "currency"] = "USD"
-                df.loc[i[0], "category"] = "Другое"
-
-                type_desc = i[1].iloc[1]
-                if type_desc == "კონვერტაცია":
-                    df.loc[i[0], "category"] = "conversion"
-                try:
-                    num = type_desc.index("MCC")
-                    type_op = int(type_desc[(num + 5) : (num + 9)])
-
-                    if (
-                        df.loc[i[0], "category"] == "Другое"
-                        or df.loc[i[0], "category"] == "nan"
-                    ):
-                        try:
-                            mcc_category = mcc_stock.loc[type_op]
-                            df.loc[i[0], "category"] = mcc_category["descr"]
-                        except BaseException as e:
-                            print(e)
-                            continue
-                except Exception as e:
-                    print(f"An error occurred: {e}")
-                    continue
+            self.get_mcc_category(df)
 
         return df
 
@@ -480,22 +517,24 @@ class UploadPaymentFileView(FormView):
         """Сохранение данных в базу данных.
         parameters: df - датафрейм pandas.
         return: ничего не возвращает"""
-        for index, column in df.iterrows():
+        for row in df.itertuples(index=False):
             if not Statement.objects.filter(
-                date=column["date"],
-                operation_name=column["operation_name"],
-                amount=column["amount"],
-                currency=column["currency"],
-                category=column["category"],
+                date=row.date,
+                operation_name=row.operation_name,
+                amount=row.amount,
+                currency=row.currency,
+                category=row.category,
+                card=row.card,
             ).exists():
-                my_category = self.get_category(column["category"])
+                my_category = self.get_category(row.category)
                 Statement.objects.create(
-                    date=column["date"],
-                    operation_name=column["operation_name"],
-                    amount=column["amount"],
-                    currency=column["currency"],
-                    category=column["category"],
+                    date=row.date,
+                    operation_name=row.operation_name,
+                    amount=row.amount,
+                    currency=row.currency,
+                    category=row.category,
                     my_category=my_category,
+                    card=row.card,  # Исправлено с ["card"] на row.card
                 )
 
     def get_category(self, category_name: str) -> str:
@@ -509,12 +548,14 @@ class UploadPaymentFileView(FormView):
                 "Бизнес услуги",
                 "Оптовые поставщики и производители",
                 "Parking Lots and Garages",
+                "Service Stations (with or without Ancillary Services)",
             ],
             "Здоровье": [
                 "Медицинский сервис",
                 "Аптеки",
                 "Hospitals",
                 "Medical Services Health Practitioners - No Elsewhere Classified",
+                "Drug Stores and Pharmacies",
             ],
             "Машина": [
                 "Автомобили - продажа / сервис",
@@ -537,12 +578,20 @@ class UploadPaymentFileView(FormView):
                 "Theatrical Producers (except Motion Pictures) and Ticket Agencies",
             ],
             "Одежда": "Магазины одежды",
+            "Красота": "Beauty and Barber Shops",
+            "Наличные": "Наличные",
+            "Доставка": "Courier Services-Air and Ground, and Freight Forwarders",
+            "Электроника": "Electronics Stores",
+            "Связь": "Telecommunication Services",
         }
 
         # Получаем имя категории в модели Django по имени категории из ваших данных
         mapped_category_name = (
             "Другое"  # Значение по умолчанию, если категория не найдена
         )
+        # Убедимся, что category_name является строкой
+        if isinstance(category_name, float):
+            category_name = str(category_name)
 
         for category, values in categories_mapping.items():
             if category_name in values:

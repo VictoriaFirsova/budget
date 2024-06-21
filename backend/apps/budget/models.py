@@ -11,6 +11,9 @@ class Category(models.Model):
 
     class Meta:
         verbose_name_plural = "categories"
+        app_label = "budget"
+
+    objects = models.Manager()
 
 
 class Statement(models.Model):
@@ -22,6 +25,12 @@ class Statement(models.Model):
     currency = models.CharField(max_length=3)
     category = models.CharField(max_length=400)
     my_category = models.ForeignKey(Category, null=True, on_delete=models.SET_NULL)
+    card = models.CharField(max_length=30, default="Unknown")
 
     def __str__(self):
         return f"{self.date} {self.amount}"
+
+    class Meta:
+        app_label = "budget"
+
+    objects = models.Manager()
