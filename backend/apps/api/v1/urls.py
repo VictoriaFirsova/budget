@@ -1,38 +1,89 @@
-from django.urls import path, include
+from django.urls import path
 from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
 from django.conf import settings
 from django.conf.urls.static import static
-from rest_framework import routers
-from apps.api.v1.budget_api.views import (
+from .budget_api.views import (
+    BudgetAnalyticsView,
     StatementViewSet,
     CategoryViewSet,
+    StatementImportView,
+    StatementManualImportView,
+    StatementImportPreviewView,
+    ImportTemplateViewSet,
+    LoginView,
+    LogoutView,
+    RegisterView,
 )
-
-router = routers.DefaultRouter()
-router.register(r"statements", StatementViewSet)
-router.register(r"categories", CategoryViewSet)
 
 urlpatterns = [
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="docs"),
-    path("", include("apps.budget.urls")),
+    path("api/auth/login/", LoginView.as_view(), name="api-login"),
+    path("api/auth/logout/", LogoutView.as_view(), name="api-logout"),
+    path("api/auth/register/", RegisterView.as_view(), name="api-register"),
     path(
-        "statements/", StatementViewSet.as_view({"get": "list"}), name="statements-list"
-    ),
-    path("categories/", CategoryViewSet.as_view({"get": "list"}), name="category-list"),
-    path(
-        "categories/<int:id>/",
-        CategoryViewSet.as_view({"get": "list"}),
-        name="category-detail",
+        "api/import/statements/",
+        StatementImportView.as_view(),
+        name="statements-import",
     ),
     path(
-        "statements/<int:pk>/",
-        StatementViewSet.as_view({"get": "retrieve", "delete": "destroy"}),
-        name="statement-detail",
+        "api/import/manual/",
+        StatementManualImportView.as_view(),
+        name="statements-manual-import",
+    ),
+    path(
+        "api/import/preview/",
+        StatementImportPreviewView.as_view(),
+        name="statements-import-preview",
+    ),
+    path(
+        "api/statements/",
+        StatementViewSet.as_view({"get": "list"}),
+        name="api-statements-list",
+    ),
+    path("api/analytics/", BudgetAnalyticsView.as_view(), name="api-budget-analytics"),
+    path(
+        "api/categories/",
+        CategoryViewSet.as_view({"get": "list", "post": "create"}),
+        name="api-category-list",
+    ),
+    path(
+        "api/categories/<int:pk>/",
+        CategoryViewSet.as_view(
+            {
+                "get": "retrieve",
+                "put": "update",
+                "patch": "partial_update",
+                "delete": "destroy",
+            }
+        ),
+        name="api-category-detail",
+    ),
+    path(
+        "api/statements/<int:pk>/",
+        StatementViewSet.as_view(
+            {"get": "retrieve", "patch": "partial_update", "delete": "destroy"}
+        ),
+        name="api-statement-detail",
+    ),
+    path(
+        "api/import/templates/",
+        ImportTemplateViewSet.as_view({"get": "list", "post": "create"}),
+        name="api-import-template-list",
+    ),
+    path(
+        "api/import/templates/<int:pk>/",
+        ImportTemplateViewSet.as_view(
+            {
+                "get": "retrieve",
+                "put": "update",
+                "patch": "partial_update",
+                "delete": "destroy",
+            }
+        ),
+        name="api-import-template-detail",
     ),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-urlpatterns += router.urls

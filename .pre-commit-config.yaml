@@ -13,14 +13,10 @@ repos:
   hooks:
     - id: mypy
       name: mypy
-
-      entry: mypy
+      entry: python scripts/run_mypy.py
       language: system
-      # run if any Python file is changed
       types: [python]
-      # mypy will always check all files
-      pass_filenames: true
-      # use require_serial so that script is only called once per commit
+      pass_filenames: false
       require_serial: true
 
 - repo: https://github.com/astral-sh/ruff-pre-commit

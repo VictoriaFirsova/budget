@@ -472,7 +472,7 @@ class UploadPaymentFileView(FormView):
             df = df.iloc[:, [0, 1, 3]]
             df["currency"] = "USD"
             df["card"] = "TBC"
-            df = df[df["operation_name"].str.contains("Salary") == False]
+            df = df[~df["operation_name"].str.contains("Salary")]
             df = df.dropna()
             self.get_mcc_category(df)
 

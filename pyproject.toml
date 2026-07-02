@@ -21,6 +21,9 @@ pandas = "^2.2.1"
 chardet = "^5.2.0"
 python-dotenv = "^1.0.1"
 xlrd = "^2.0.1"
+django-cors-headers = "^4.4.0"
+openpyxl = "^3.1.5"
+pypdf = "^6.12.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -41,6 +44,8 @@ build-backend = "poetry.core.masonry.api"
 plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 strict_optional = 'True'
 python_version = "3.11"
+mypy_path = "backend"
+explicit_package_bases = true
 check_untyped_defs = true
 warn_unused_ignores = true
 warn_redundant_casts = true
@@ -51,7 +56,7 @@ ignore_missing_imports = true
 
 
 [mypy.plugins.django-stubs]
-django_settings_module = "backend.server.settings"
+django_settings_module = "server.settings"
 strict_settings = false
 ignore_missing_settings = true
 ignore_missing_model_attributes = true
@@ -62,4 +67,4 @@ module = "*.migrations.*"
 ignore_errors = true
 
 [tool.django-stubs]
-django_settings_module = "backend.server.settings"
+django_settings_module = "server.settings"

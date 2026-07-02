@@ -10,15 +10,26 @@
                 <input type="submit" value="Сохранить" >
             </form>
             <div>
-                {% if categories  %}
-                    <ol>
-                        {% for category in categories %}
-                        <h6><li> {{category.title}} </li></h6>
-                        <p><em><a href="edit/{{category.id}}">Изменить</a> | <a href="delete/{{category.id}}">Удалить</a></em></p>
-                        {% endfor %}
+                {% if categories %}
+        <ol>
+            {% for category in categories %}
+            <h6><li> {{ category.title }} </li></h6>
+            <p>
+                <em><a href="?edit_id={{ category.id }}">Изменить</a> | <a href="{{ category.id }}/delete/">Удалить</a></em>
+            </p>
+            {% if category_to_edit and category_to_edit.id == category.id %}
+                <form method="post" action="{% url 'edit' category.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="id" value="{{ category_to_edit.id }}">
+                    <label for="title">Title:</label>
+                    <input type="text" id="title" name="title" value="{{ category_to_edit.title }}">
+                    <button type="submit">Save</button>
+                </form>
+            {% endif %}
+            {% endfor %}
                     </ol>
                 {% else %}
-                    <p>There are no categories </p>
+                    <p>There are no categories</p>
                 {% endif %}
             </div>
         {% else %}

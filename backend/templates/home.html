@@ -27,11 +27,15 @@
         <option value="last_year">Последний год</option>
         <option value="custom">Другой диапазон</option>
     </select>
-    <select name="card_filter" id="card_filter">
-        <option value="">Без фильтра по карте</option>
-        <option value="last_month">Priorbank</option>
-        <option value="last_quarter">TBC</option>
-    </select>
+    <form method="get" action=".">
+        <label for="card_filter">Filter by Card:</label>
+        <select id="card_filter" name="card_filter">
+            <option value="">All</option>
+            <option value="TBC" {% if request.GET.card_filter == "TBC" %}selected{% endif %}>TBC</option>
+            <option value="Priorbank" {% if request.GET.card_filter == "Priorbank" %}selected{% endif %}>Priorbank</option>
+        </select>
+        <button type="submit">Filter</button>
+    </form>
 
     <div id="custom_date_range" style="display: none;">
         <label for="start_date">Начальная дата:</label>
@@ -41,7 +45,6 @@
         <input type="date" name="end_date" id="end_date">
     </div>
 
-    <button type="submit">Применить фильтр</button>
 </form>
 
 <script>

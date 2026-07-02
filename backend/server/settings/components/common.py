@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     "rest_framework_swagger",
     "drf_spectacular",
     "extra_checks",
-    "apps",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -46,9 +46,15 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "server.urls"
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # адрес фронтенда
+]
+CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
@@ -58,6 +64,9 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+# Add the path to the React build directory
+REACT_APP_DIR = os.path.join(BASE_DIR, "frontend", "build")
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Budget api",
@@ -119,9 +128,11 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
-
-STATIC_URL = "budget/static/"
-
+# Configure static files settings
+STATICFILES_DIRS = [
+    os.path.join(REACT_APP_DIR, "static"),
+]
+STATIC_URL = "/static/"
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
