@@ -3,18 +3,17 @@ WORKDIR /fe
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm install
 COPY frontend/ ./
+ENV CI=true
 RUN npm run build
 
 FROM python:3.11-slim
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc libpq-dev python3-dev && rm -rf /var/lib/apt/lists/*
+    libpq5 && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml poetry.lock README.md ./
-RUN pip install --no-cache-dir "poetry==1.8.5" \
-    && poetry config virtualenvs.create false \
-    && poetry install --only main --no-root --no-interaction --no-ansi
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ ./
 COPY --from=frontend /fe/build /app/frontend_build
