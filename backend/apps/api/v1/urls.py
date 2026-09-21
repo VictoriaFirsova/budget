@@ -1,7 +1,8 @@
-from django.urls import path
+from django.urls import path, re_path
 from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
 from django.conf import settings
 from django.conf.urls.static import static
+from .budget_api.frontend import FrontendAppView, HealthView
 from .budget_api.views import (
     BudgetAnalyticsView,
     StatementViewSet,
@@ -16,6 +17,7 @@ from .budget_api.views import (
 )
 
 urlpatterns = [
+    path("api/health/", HealthView.as_view(), name="api-health"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="docs"),
     path("api/auth/login/", LoginView.as_view(), name="api-login"),
@@ -87,3 +89,8 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += [
+    path("", FrontendAppView.as_view(), name="frontend-home"),
+    re_path(r"^(?!api/).*$", FrontendAppView.as_view(), name="frontend-app"),
+]

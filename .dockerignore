@@ -1,0 +1,16 @@
+.git
+.idea
+.vscode
+.venv
+**/.venv
+**/__pycache__
+**/.env
+**/.mypy_cache
+**/.pytest_cache
+**/.ruff_cache
+**/node_modules
+frontend/build
+backend/staticfiles
+backend/media
+backend/node_modules
+*.log

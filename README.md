@@ -56,6 +56,25 @@ python manage.py runserver
 
 10. Откройте браузер и перейдите по адресу <http://127.0.0.1:8000/> для доступа к приложению.
 
+Локально удобнее два процесса: Django на 8000 и React на 3000 (`cd frontend && npm start`).
+В продакшене фронтенд собирается и отдаётся самим Django.
+
+## Деплой на Railway
+
+Один веб-сервис (API + React) и PostgreSQL — как у CRM.
+
+1. Закоммитьте и запушьте репозиторий на GitHub (`VictoriaFirsova/budget`).
+2. [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**.
+3. В настройках сервиса: **Builder = Dockerfile** (не Railpack). Root Directory оставьте пустым (корень репо).
+4. **+ Add** → **Database** → **PostgreSQL**.
+5. Variables веб-сервиса:
+   - `DATABASE_URL` = `${{Postgres.DATABASE_URL}}`
+   - `SECRET_KEY` = длинная случайная строка
+   - `DEBUG` = `False`
+6. **Generate Domain** — это URL приложения. Откройте его, зарегистрируйтесь и войдите.
+
+Проверка: `https://ваш-сервис.up.railway.app/api/health/` должно вернуть `{"status":"ok"}`.
+
 ## Использование
 1. Зарегистрируйтесь
 2. Перейдите на страницу загрузки файла
