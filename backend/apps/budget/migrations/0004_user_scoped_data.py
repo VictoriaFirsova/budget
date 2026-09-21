@@ -9,8 +9,7 @@ def get_fallback_user(apps):
     if user:
         return user
 
-    user = User(username="default")
-    user.set_unusable_password()
+    user = User(username="default", password="!")
     user.save()
     return user
 
