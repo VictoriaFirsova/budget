@@ -9,10 +9,10 @@ FROM python:3.11-slim
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc libpq-dev && rm -rf /var/lib/apt/lists/*
+    gcc libpq-dev python3-dev && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml poetry.lock ./
-RUN pip install --no-cache-dir poetry \
+COPY pyproject.toml poetry.lock README.md ./
+RUN pip install --no-cache-dir "poetry==1.8.5" \
     && poetry config virtualenvs.create false \
     && poetry install --only main --no-root --no-interaction --no-ansi
 

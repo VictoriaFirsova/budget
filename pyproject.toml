@@ -4,9 +4,7 @@ version = "0.1.0"
 description = "simple budget app for personal use"
 authors = ["VF"]
 readme = "README.md"
-packages = [
-    { include = "*" },
-]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
